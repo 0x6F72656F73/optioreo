@@ -1,19 +1,24 @@
 import { useState, useRef, useEffect, FormEvent } from 'react';
 
 import { mutate } from "swr";
+import { useSession } from 'next-auth/react';
 
 import { Flex, Box, Heading, FormControl, FormLabel, Input, Button, useToast, Textarea } from "@chakra-ui/react";
 
 interface FormData {
     title: string;
     content: string;
+    authorId?: string;
 }
 
 export default function EntryForm() {
 
+    const { data: session } = useSession();
+
     const [formData, setFormData] = useState<FormData>({
         title: "",
         content: "",
+        authorId: "",
     });
     
     const toast = useToast();
@@ -23,14 +28,20 @@ export default function EntryForm() {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(formData);
-    
+        console.log(session?.user?.id)
+        const updatedFormData = {
+            ...formData,
+            authorId: session?.user?.id || "",
+          };
+
+        console.log(updatedFormData);
+        
         try {
             // Submit form data to API
             const response = await fetch("/api/createEntry", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
+            body: JSON.stringify(updatedFormData),
             });
     
             // Handle API response
@@ -70,7 +81,7 @@ export default function EntryForm() {
             isClosable: true,
             });
         }
-        };
+    };
     
     const handleInputChange = (e: FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.currentTarget;

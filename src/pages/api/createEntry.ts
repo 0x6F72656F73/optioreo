@@ -8,12 +8,23 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   switch (method) {
     case 'POST':
       // get the title and content from the request body
-      const { title, content } = req.body
+      const { title, content, authorId } = req.body
+      console.log(authorId)
       // use prisma to create a new post using that data
       const entry = await prisma.entry.create({
         data: {
           title,
-          content
+          content,
+          author: {
+            connectOrCreate: {
+              where: {
+                id: authorId
+              },
+              create: {
+                id: authorId,
+              },
+            },
+            }
         }
       })
       // send the post object back to the client
